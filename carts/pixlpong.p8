@@ -68,9 +68,39 @@ function upd_play()
 	if (btn(➡️)) then
 		if (p1.x+p1.w!=127) p1.x+=1
 	end
+	if (btn(⬆️)) then -- moving left
+		if (p1.y-p1.h!=0) p1.y-=1
+	end
+	if (btn(⬇️)) then
+		if (p1.y+p1.h!=127) p1.y+=1
+	end
+	
+	--run wall collision detection
+	if (b.y+b.dy<0 or b.y+b.dy>128) then
+		b.c+=1
+	 if(b.c==16)b.c=1
+	 		
+	 b.dy*=-1
+	end
+	if (b.x+b.dx<0 or b.x+b.dx>127) then
+		b.c+=1
+	 if(b.c==16)b.c=1
+	 		
+	 b.dx*=-1	
+	end
 
 	--run collision detection
-	
+	--simple version 1
+	--check to see if it is going past the paddle
+	if (b.y+b.dy<=p1.y+p1.h) then -- we could be hitting the paddle or missing it
+	 if ((p1.x-p1.w)<(b.x+b.dx) 
+	 	and (p1.x+p1.w)>(b.x+b.dx)) then
+	 		b.c+=1
+	 		if(b.c==16)b.c=0
+	 		
+	 		b.dy*=-1
+	 end	
+	end
 	
 	--update ball position
 	b.x+=b.dx
@@ -96,6 +126,7 @@ end
 function drw_play()
  camera(0,0)
 	cls()
+	rect(0,0,127,127,11)
 	drw_ball(b)
 	drw_player(p1) -- could add p2 from here
 end
