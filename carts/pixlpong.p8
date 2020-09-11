@@ -12,6 +12,9 @@ k_win      = 0x8 -- 0001
 k_logo_frames = 12
 k_logo_steps = 5 -- time to hold frame
 
+k_max_parts = 100
+k_max_part_hp = 100
+
 -- ui
 ui = {}
 -- disable logo ui.mode = k_logo
@@ -36,8 +39,50 @@ p1.w = 5 -- half width; will draw on each side of the location
 p1.h = 1 -- half height
 p1.c = 14
 
+-- particle effects !!!
+part_xs    = {}
+part_p_xs  = {} -- p = previous
+part_ys    = {}
+part_p_ys  = {} -- p = previous
+part_dxs   = {}
+part_dys   = {}
+part_hps   = {}
+part_index = 1
+
 function _init()
 
+end
+
+function reset_parts()
+	for i=1,k_max_parts do
+		part_xs[i]    = 0
+		part_p_xs[i]  = 0 -- p = previous
+		part_ys[i]    = 0
+		part_p_ys[i]  = 0 -- p = previous
+		part_dxs[i]   = 0
+		part_dys[i]   = 0
+		part_hps[i]   = 0
+	end
+end
+
+function fire_next_parts
+		(n,init_x,init_y)
+	for i=1,n do
+		if(part_index>k_max_parts)part_index=1
+		
+		part_spd = rnd(3)
+		part_angle = rnd(1)
+		
+		part_xs[part_index]    = init_x
+		part_p_xs[part_index]  = init_x -- p = previous
+		part_ys[part_index]    = init_y
+		part_p_ys[part_index]  = init_y -- p = previous
+		part_dxs[part_index]   = cos(part_angle)*part_spd
+		part_dys[part_index]   = sin(part_angle)*part_spd
+		part_hps[part_index]   = 100
+		
+		part_index+=1
+	end
 end
 -->8
 -- update
@@ -109,7 +154,7 @@ function upd_play()
 	 		-- speed
 	 		if(b.x<p1.x)b.dx-=1
 	 		if(b.x>p1.x)b.dx+=1
-	 		
+	 		fire_next_parts(25,b.x,b.y)
 	 end	
 	end
 	
@@ -117,6 +162,20 @@ function upd_play()
 	b.x+=b.dx
 	b.y+=b.dy
 	
+end
+
+function upd_parts()
+	for i=1,k_max_parts do
+		if (part_hps[i] > 0) then
+			part_p_xs[i]  = part_xs[i] -- p = previous
+			part_p_ys[i]  = part_ys[i] -- p = previous
+			part_xs[i]    += part_dxs[i]
+			part_ys[i]    += part_dys[i]
+			part_dxs[i]   *= 0.95
+			part_dys[i]   *= 0.95
+			part_hps[i]   -= 1
+		end
+	end
 end
 
 function upd_logo()
@@ -150,11 +209,19 @@ function drw_player(plr)
 	rectfill(plr.x-plr.w,plr.y-plr.h,plr.x+plr.w,plr.y+plr.h,plr.c)
 end
 
-
-
-
-
-
+function drw_parts()
+	for i=1,k_max_parts do
+		if (part_hps[i] > 0) then
+			color_lookup = ceil(part_hps[i]/20)
+			part_color = 2
+			if(color_lookup==5)part_color=7
+			if(color_lookup==4)part_color=10
+			if(color_lookup==3)part_color=9
+			if(color_lookup==2)part_color=8
+			line(part_p_xs[i],part_p_ys[i],part_xs[i],part_ys[i],part_color)
+		end
+	end
+end
 
 function drw_logo()
  cls()
