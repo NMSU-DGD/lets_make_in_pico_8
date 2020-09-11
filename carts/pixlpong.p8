@@ -50,7 +50,7 @@ part_hps   = {}
 part_index = 1
 
 function _init()
-
+	reset_parts()
 end
 
 function reset_parts()
@@ -63,6 +63,8 @@ function reset_parts()
 		part_dys[i]   = 0
 		part_hps[i]   = 0
 	end
+	
+	part_index=1
 end
 
 function fire_next_parts
@@ -126,12 +128,14 @@ function upd_play()
 	 if(b.c==16)b.c=1
 	 		
 	 b.dy*=-1
+	 fire_next_parts(25,b.x,b.y)
 	end
 	if (b.x+b.dx<0 or b.x+b.dx>127) then
 		b.c+=1
 	 if(b.c==16)b.c=1
 	 		
 	 b.dx*=-1	
+	 fire_next_parts(25,b.x,b.y)
 	end
 
 	--run collision detection
@@ -162,6 +166,8 @@ function upd_play()
 	b.x+=b.dx
 	b.y+=b.dy
 	
+	--particles!!!
+	upd_parts()
 end
 
 function upd_parts()
@@ -199,6 +205,7 @@ function drw_play()
 	rect(0,0,127,127,11)
 	drw_ball(b)
 	drw_player(p1) -- could add p2 from here
+	drw_parts()
 end
 
 function drw_ball(ball)
