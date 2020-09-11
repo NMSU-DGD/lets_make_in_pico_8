@@ -90,15 +90,26 @@ function upd_play()
 	end
 
 	--run collision detection
-	--simple version 1
-	--check to see if it is going past the paddle
-	if (b.y+b.dy<=p1.y+p1.h) then -- we could be hitting the paddle or missing it
+	--simple version 2
+	--checking collision with the
+	--paddle -- still need to 
+	--account for size of ball
+	if (b.y+b.dy==p1.y+p1.h) then -- we could be hitting the paddle or missing it
 	 if ((p1.x-p1.w)<(b.x+b.dx) 
 	 	and (p1.x+p1.w)>(b.x+b.dx)) then
 	 		b.c+=1
 	 		if(b.c==16)b.c=0
 	 		
 	 		b.dy*=-1
+	 		-- also apply some x velocity
+	 		-- based on where the hit happened
+	 		-- should switch to using
+	 		-- proper vector math / 
+	 		-- trigonometry to conserve
+	 		-- speed
+	 		if(b.x<p1.x)b.dx-=1
+	 		if(b.x>p1.x)b.dx+=1
+	 		
 	 end	
 	end
 	
