@@ -33,22 +33,9 @@ b.c = 10
 
 -- player 1?
 p1 = {}
-p1.x = 64
-p1.y = 3
-p1.w = 5 -- half width; will draw on each side of the location
-p1.h = 1 -- half height
-p1.c = 14
-p1.s = 0 -- score
 
 -- player 2!
 p2 = {}
-p2.x = 64
-p2.y = 124
-p2.w = 5 -- half width; will draw on each side of the location
-p2.h = 1 -- half height
-p2.c = 12
-p2.s = 0 -- score
-
 
 -- particle effects !!!
 part_xs    = {}
@@ -62,6 +49,7 @@ part_index = 1
 
 function _init()
 	reset_parts()
+	reset_players()
 end
 
 function reset_parts()
@@ -76,6 +64,22 @@ function reset_parts()
 	end
 	
 	part_index=1
+end
+
+function reset_players()
+	p1.x = 64
+	p1.y = 3
+	p1.w = 5 -- half width; will draw on each side of the location
+	p1.h = 1 -- half height
+	p1.c = 14
+	p1.s = 0 -- score
+	
+	p2.x = 64
+	p2.y = 124
+	p2.w = 5 -- half width; will draw on each side of the location
+	p2.h = 1 -- half height
+	p2.c = 12
+	p2.s = 0 -- score
 end
 
 function fire_next_parts
@@ -147,17 +151,16 @@ function upd_play()
 	end
 	
 	--run wall collision detection
-	if (b.y+b.dy<0 or b.y+b.dy>128) then
-		b.c+=1
-	 if(b.c==16)b.c=1
-	 		
+	if (b.y+b.dy<0) then --top
+		p2.s+=1
+	 b.dy*=-1
+	 fire_next_parts(25,b.x,b.y)
+	elseif (b.y+b.dy>128) then
+		p1.s+=1
 	 b.dy*=-1
 	 fire_next_parts(25,b.x,b.y)
 	end
 	if (b.x+b.dx<0 or b.x+b.dx>127) then
-		b.c+=1
-	 if(b.c==16)b.c=1
-	 		
 	 b.dx*=-1	
 	 fire_next_parts(25,b.x,b.y)
 	end
@@ -183,8 +186,8 @@ function p_b_collision(plr,ball)
 	 if ((plr.x-plr.w)<(ball.x+ball.dx) 
 	 	and (plr.x+plr.w)>(ball.x+ball.dx)) 
 	 		then
-	 	ball.c+=1
-	 	if(ball.c==16)ball.c=0
+-- ball color cycle; commented	 	ball.c+=1
+--	 	if(ball.c==16)ball.c=0
 	 		
 	 	ball.dy*=-1
 	 	-- also apply some x velocity
@@ -233,10 +236,16 @@ function drw_play()
  camera(0,0)
 	cls()
 	rect(0,0,127,127,11)
+	drw_scores() -- puts both scores in the background
 	drw_ball(b)
 	drw_player(p1) -- could add p2 from here
 	drw_player(p2)
 	drw_parts()
+end
+
+function drw_scores()
+	print(p1.s,2,2,p1.c)
+	print(p2.s,123,121,p2.c)
 end
 
 function drw_ball(ball)
