@@ -12,7 +12,7 @@ k_win      = 0x8 -- 0001
 k_logo_frames = 12
 k_logo_steps = 5 -- time to hold frame
 
-k_max_parts = 100
+k_max_parts = 1000
 k_max_part_hp = 100
 
 -- ui
@@ -38,6 +38,17 @@ p1.y = 3
 p1.w = 5 -- half width; will draw on each side of the location
 p1.h = 1 -- half height
 p1.c = 14
+p1.s = 0 -- score
+
+-- player 2!
+p2 = {}
+p2.x = 64
+p2.y = 124
+p2.w = 5 -- half width; will draw on each side of the location
+p2.h = 1 -- half height
+p2.c = 12
+p2.s = 0 -- score
+
 
 -- particle effects !!!
 part_xs    = {}
@@ -81,7 +92,7 @@ function fire_next_parts
 		part_p_ys[part_index]  = init_y -- p = previous
 		part_dxs[part_index]   = cos(part_angle)*part_spd
 		part_dys[part_index]   = sin(part_angle)*part_spd
-		part_hps[part_index]   = 100
+		part_hps[part_index]   = k_max_part_hp
 		
 		part_index+=1
 	end
@@ -109,17 +120,30 @@ end
 function upd_play()
 	-- update player position
 	--  based on key input
-	if (btn(⬅️)) then -- moving left
+	if (btn(⬅️,0)) then -- moving left
 		if (p1.x-p1.w!=0) p1.x-=1
 	end
-	if (btn(➡️)) then
+	if (btn(➡️,0)) then
 		if (p1.x+p1.w!=127) p1.x+=1
 	end
-	if (btn(⬆️)) then -- moving left
+	if (btn(⬆️,0)) then -- moving left
 		if (p1.y-p1.h!=0) p1.y-=1
 	end
-	if (btn(⬇️)) then
+	if (btn(⬇️,0)) then
 		if (p1.y+p1.h!=127) p1.y+=1
+	end
+	
+	if (btn(⬅️,1)) then -- moving left
+		if (p2.x-p2.w!=0) p2.x-=1
+	end
+	if (btn(➡️,1)) then
+		if (p2.x+p2.w!=127) p2.x+=1
+	end
+	if (btn(⬆️,1)) then -- moving left
+		if (p2.y-p2.h!=0) p2.y-=1
+	end
+	if (btn(⬇️,1)) then
+		if (p2.y+p2.h!=127) p2.y+=1
 	end
 	
 	--run wall collision detection
@@ -138,29 +162,8 @@ function upd_play()
 	 fire_next_parts(25,b.x,b.y)
 	end
 
-	--run collision detection
-	--simple version 2
-	--checking collision with the
-	--paddle -- still need to 
-	--account for size of ball
-	if (b.y+b.dy==p1.y+p1.h) then -- we could be hitting the paddle or missing it
-	 if ((p1.x-p1.w)<(b.x+b.dx) 
-	 	and (p1.x+p1.w)>(b.x+b.dx)) then
-	 		b.c+=1
-	 		if(b.c==16)b.c=0
-	 		
-	 		b.dy*=-1
-	 		-- also apply some x velocity
-	 		-- based on where the hit happened
-	 		-- should switch to using
-	 		-- proper vector math / 
-	 		-- trigonometry to conserve
-	 		-- speed
-	 		if(b.x<p1.x)b.dx-=1
-	 		if(b.x>p1.x)b.dx+=1
-	 		fire_next_parts(25,b.x,b.y)
-	 end	
-	end
+	p_b_collision(p1,b)
+	p_b_collision(p2,b)
 	
 	--update ball position
 	b.x+=b.dx
@@ -168,6 +171,33 @@ function upd_play()
 	
 	--particles!!!
 	upd_parts()
+end
+
+function p_b_collision(plr,ball)
+	--run collision detection
+	--simple version 2
+	--checking collision with the
+	--paddle -- still need to 
+	--account for size of ball
+	if (ball.y+ball.dy==plr.y+plr.h) then -- we could be hitting the paddle or missing it
+	 if ((plr.x-plr.w)<(ball.x+ball.dx) 
+	 	and (plr.x+plr.w)>(ball.x+ball.dx)) 
+	 		then
+	 	ball.c+=1
+	 	if(ball.c==16)ball.c=0
+	 		
+	 	ball.dy*=-1
+	 	-- also apply some x velocity
+	 	-- based on where the hit happened
+	 	-- should switch to using
+	 	-- proper vector math / 
+	 	-- trigonometry to conserve
+	 	-- speed
+	 	if(ball.x<plr.x)ball.dx-=1
+	 	if(ball.x>plr.x)ball.dx+=1
+	 	fire_next_parts(25,ball.x,ball.y)
+	 end	
+	end
 end
 
 function upd_parts()
@@ -205,6 +235,7 @@ function drw_play()
 	rect(0,0,127,127,11)
 	drw_ball(b)
 	drw_player(p1) -- could add p2 from here
+	drw_player(p2)
 	drw_parts()
 end
 
