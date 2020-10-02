@@ -6,14 +6,18 @@ __lua__
 k_logo					= 0x0 -- 0000
 k_start    = 0x1 -- 1000
 k_play     = 0x2 -- 0100
-k_over     = 0x4 -- 0010
-k_win      = 0x8 -- 0001
+k_p1_win   = 0x4 -- 0010
+k_p2_win   = 0x8 -- 0001
+
+k_win_value = 2
 
 k_logo_frames = 12
 k_logo_steps = 5 -- time to hold frame
 
 k_max_parts = 1000
 k_max_part_hp = 100
+
+k_goal_size = 10
 
 -- ui
 ui = {}
@@ -28,7 +32,7 @@ b.x = 64
 b.y = 64
 b.dx = 0
 b.dy = -1
-b.r = 3
+b.r = 1
 b.c = 10
 
 -- player 1?
@@ -73,6 +77,7 @@ function reset_players()
 	p1.h = 1 -- half height
 	p1.c = 14
 	p1.s = 0 -- score
+	p1.name = '1'
 	
 	p2.x = 64
 	p2.y = 124
@@ -80,6 +85,7 @@ function reset_players()
 	p2.h = 1 -- half height
 	p2.c = 12
 	p2.s = 0 -- score
+	p2.name = '2'
 end
 
 function fire_next_parts
@@ -107,7 +113,11 @@ end
 function _update60()
 	if(ui.mode==k_logo)upd_logo()
 	if(ui.mode==k_start)ui.mode=k_play
-	if(ui.mode==k_play)upd_play()
+	if ui.mode==k_play then
+	 upd_play()
+	 if(p1.s > k_win_value)ui.mode=k_p1_win
+	 if(p2.s > k_win_value)ui.mode=k_p2_win
+	end
 end
 -->8
 -- draw
@@ -115,6 +125,8 @@ end
 function _draw()
 	if(ui.mode==k_logo)drw_logo()
 	if(ui.mode==k_play)drw_play()
+	if(ui.mode==k_p1_win)drw_win(p1)
+	if(ui.mode==k_p2_win)drw_win(p2)
 end
 
 
@@ -268,6 +280,12 @@ function drw_parts()
 			line(part_p_xs[i],part_p_ys[i],part_xs[i],part_ys[i],part_color)
 		end
 	end
+end
+
+function drw_win(plr)
+	cls()
+	
+	print('congratulations player '..plr.name,0,44,plr.c)
 end
 
 function drw_logo()
