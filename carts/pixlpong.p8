@@ -74,7 +74,6 @@ function reset_players()
 	p1.x = 64
 	p1.y = 3
 	p1.w = 5 -- half width; will draw on each side of the location
-	p1.h = 1 -- half height
 	p1.c = 14
 	p1.s = 0 -- score
 	p1.name = '1'
@@ -82,7 +81,6 @@ function reset_players()
 	p2.x = 64
 	p2.y = 124
 	p2.w = 5 -- half width; will draw on each side of the location
-	p2.h = 1 -- half height
 	p2.c = 12
 	p2.s = 0 -- score
 	p2.name = '2'
@@ -190,28 +188,22 @@ end
 
 function p_b_collision(plr,ball)
 	--run collision detection
-	--simple version 2
-	--checking collision with the
-	--paddle -- still need to 
-	--account for size of ball
-	if (ball.y+ball.dy==plr.y+plr.h) then -- we could be hitting the paddle or missing it
-	 if ((plr.x-plr.w)<(ball.x+ball.dx) 
-	 	and (plr.x+plr.w)>(ball.x+ball.dx)) 
-	 		then
--- ball color cycle; commented	 	ball.c+=1
---	 	if(ball.c==16)ball.c=0
+	--simple version 3
+	--does surface / particle 
+	--collision
+	if line_seg_intersect(ball.x,ball.y,ball.x+ball.dx,ball.y+ball.dy,plr.x-w,plr.y,plr.x+w,plr.y)
+			then
 	 		
-	 	ball.dy*=-1
-	 	-- also apply some x velocity
-	 	-- based on where the hit happened
-	 	-- should switch to using
-	 	-- proper vector math / 
-	 	-- trigonometry to conserve
-	 	-- speed
-	 	if(ball.x<plr.x)ball.dx-=1
-	 	if(ball.x>plr.x)ball.dx+=1
-	 	fire_next_parts(25,ball.x,ball.y)
-	 end	
+	 ball.dy*=-1
+	 -- also apply some x velocity
+	 -- based on where the hit happened
+	 -- should switch to using
+	 -- proper vector math / 
+	 -- trigonometry to conserve
+	 -- speed
+	 if(ball.x<plr.x)ball.dx-=1
+	 if(ball.x>plr.x)ball.dx+=1
+	 fire_next_parts(25,ball.x,ball.y)
 	end
 end
 
@@ -241,6 +233,28 @@ function upd_logo()
 		end
 		if (ui.frame>k_logo_frames) ui.mode=k_start
 end
+
+-- returns 1 if lines intersect
+--  0 if not. from:
+--  https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+function line_seg_intersect(
+		p0x,p0y,p1x,p1y,p2x,p2y,p3x,p3y)
+	
+	s1x=p1x-p0x;
+	s1y=p1y-p0y;
+	
+	s2x=p3x-p2x;
+	s2y=p3y-p2y;
+	
+	s=(-s1y*(p0x-p2x)+s1x*(p0y-p2y))/(-s2x*s1y+s1x*s2y)
+	t=( s2x*(p0y-p2y)-s2y*(p0x-p2x))/(-s2x*s1y+s1x*s2y)
+
+	if (s>=0 and s<=1 and t>=0 and t<=1) then
+		return true
+	else
+		return false
+	end		
+end
 -->8
 -- draw functions
 
@@ -265,7 +279,7 @@ function drw_ball(ball)
 end
 
 function drw_player(plr)
-	rectfill(plr.x-plr.w,plr.y-plr.h,plr.x+plr.w,plr.y+plr.h,plr.c)
+	rectfill(plr.x-plr.w,plr.y,plr.x+plr.w,plr.y,plr.c)
 end
 
 function drw_parts()
