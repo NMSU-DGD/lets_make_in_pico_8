@@ -141,10 +141,10 @@ function upd_play()
 		if (p1.x+p1.w!=127) p1.x+=1
 	end
 	if (btn(⬆️,0)) then -- moving left
-		if (p1.y-p1.h!=0) p1.y-=1
+		if (p1.y!=0) p1.y-=1
 	end
 	if (btn(⬇️,0)) then
-		if (p1.y+p1.h!=127) p1.y+=1
+		if (p1.y!=127) p1.y+=1
 	end
 	
 	if (btn(⬅️,1)) then -- moving left
@@ -154,10 +154,10 @@ function upd_play()
 		if (p2.x+p2.w!=127) p2.x+=1
 	end
 	if (btn(⬆️,1)) then -- moving left
-		if (p2.y-p2.h!=0) p2.y-=1
+		if (p2.y!=0) p2.y-=1
 	end
 	if (btn(⬇️,1)) then
-		if (p2.y+p2.h!=127) p2.y+=1
+		if (p2.y!=127) p2.y+=1
 	end
 	
 	--run wall collision detection
@@ -191,7 +191,7 @@ function p_b_collision(plr,ball)
 	--simple version 3
 	--does surface / particle 
 	--collision
-	if line_seg_intersect(ball.x,ball.y,ball.x+ball.dx,ball.y+ball.dy,plr.x-w,plr.y,plr.x+w,plr.y)
+	if line_seg_intersect(ball.x,ball.y,ball.x+ball.dx,ball.y+ball.dy,plr.x-plr.w,plr.y,plr.x+plr.w,plr.y)
 			then
 	 		
 	 ball.dy*=-1
