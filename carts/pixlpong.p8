@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 27
+version 29
 __lua__
 -- init
 
@@ -9,7 +9,7 @@ k_play     = 0x2 -- 0100
 k_p1_win   = 0x4 -- 0010
 k_p2_win   = 0x8 -- 0001
 
-k_win_value = 2
+k_win_value = 9
 
 k_logo_frames = 12
 k_logo_steps = 5 -- time to hold frame
@@ -19,12 +19,19 @@ k_max_part_hp = 100
 
 k_goal_size = 10
 
+k_friction = 0.90
+k_impulse_inc = 0.55
+k_epsilon = 0.000001
+
+k_ai_countdown = 0
+
 -- ui
 ui = {}
 -- disable logo ui.mode = k_logo
 ui.mode = k_start
 ui.step = k_logo_steps
 ui.frame = 0
+ui.c = 11
 
 -- ball -- could we do more than one???
 b = {}
@@ -73,6 +80,8 @@ end
 function reset_players()
 	p1.x = 64
 	p1.y = 3
+	p1.dx = 0
+	p1.dy = 0
 	p1.w = 5 -- half width; will draw on each side of the location
 	p1.c = 14
 	p1.s = 0 -- score
@@ -80,10 +89,15 @@ function reset_players()
 	
 	p2.x = 64
 	p2.y = 124
+	p2.dx = 0
+	p2.dy = 0
 	p2.w = 5 -- half width; will draw on each side of the location
 	p2.c = 12
 	p2.s = 0 -- score
 	p2.name = '2'
+	p2.ai_x = 0
+	p2.ai_y = 0
+	p2.ai_countdown = k_ai_countdown
 end
 
 function fire_next_parts
@@ -132,41 +146,120 @@ end
 -- update functions
 
 function upd_play()
-	-- update player position
+	-- update player velocity
 	--  based on key input
 	if (btn(⬅️,0)) then -- moving left
-		if (p1.x-p1.w!=0) p1.x-=1
+		if (p1.x-p1.w>0) then 
+			p1.dx-=k_impulse_inc
+		else
+		 p1.dx=0
+		end
 	end
 	if (btn(➡️,0)) then
-		if (p1.x+p1.w!=127) p1.x+=1
+		if (p1.x+p1.w<127) then
+		 p1.dx+=k_impulse_inc
+		else
+		 p1.dx=0
+		end
 	end
 	if (btn(⬆️,0)) then -- moving left
-		if (p1.y!=0) p1.y-=1
+		if (p1.y>0) then 
+		 p1.dy-=k_impulse_inc
+		else
+		 p1.dy=0
+		end
 	end
 	if (btn(⬇️,0)) then
-		if (p1.y!=127) p1.y+=1
+		if (p1.y<64) then 
+		 p1.dy+=k_impulse_inc
+		else
+		 p1.dy=0
+		end
+	end
+
+	if (p2.ai_countdown == 0) then
+		if	(p2.x<b.x) then p2.ai_x=1 end
+		if (p2.x>b.x) p2.ai_x=-1
+		if (p2.y>b.y) p2.ai_y=-1
+		if (p2.y<b.y) p2.ai_y=1 
+		p2.ai_countdown = k_ai_countdown
+	else
+		p2.ai_countdown -= 1
 	end
 	
+	if (p2.ai_x==-1) then -- moving left
+		if (p2.x-p2.w>0) then 
+			p2.dx-=k_impulse_inc
+		else
+		 p2.dx=0
+		end
+	end
+	if (p2.ai_x==1) then
+		if (p2.x+p2.w<127) then
+		 p2.dx+=k_impulse_inc
+		else
+		 p2.dx=0
+		end
+	end
+	if (p2.ai_y==-1) then -- moving up
+		if (p2.y>64) then 
+		 p2.dy-=k_impulse_inc
+		else
+		 p2.dy=0
+		end
+	end
+	if (p2.ai_y==1) then
+		if (p2.y<127) then 
+		 p2.dy+=k_impulse_inc
+		else
+		 p2.dy=0
+		end
+	end
+
+	
+	--[[ p2 controls (replaced with ai)
 	if (btn(⬅️,1)) then -- moving left
-		if (p2.x-p2.w!=0) p2.x-=1
+		if (p2.x-p2.w<=0) p2.dx-=k_impulse_inc
 	end
 	if (btn(➡️,1)) then
-		if (p2.x+p2.w!=127) p2.x+=1
+		if (p2.x+p2.w>=127) p2.dx+=k_impulse_inc
 	end
 	if (btn(⬆️,1)) then -- moving left
-		if (p2.y!=0) p2.y-=1
+		if (p2.y<=0) p2.dy-=k_impulse_inc
 	end
 	if (btn(⬇️,1)) then
-		if (p2.y!=127) p2.y+=1
-	end
+		if (p2.y>=127) p2.dy+=k_impulse_inc
+	end]]--
+	
+	--update ball position
+	p1.x+=p1.dx
+	p1.y+=p1.dy
+	p2.x+=p2.dx
+	p2.y+=p2.dy
+	
+	p1.dx *= k_friction
+	p1.dy *= k_friction
+	p2.dx *= k_friction
+	p2.dy *= k_friction
+	
+	if (abs(p1.dx)<k_epsilon) p1.dx=0 
+	if (abs(p1.dy)<k_epsilon) p1.dy=0 
+	if (abs(p2.dx)<k_epsilon) p2.dx=0 
+	if (abs(p2.dy)<k_epsilon) p2.dy=0 
 	
 	--run wall collision detection
 	if (b.y+b.dy<0) then --top
 		p2.s+=1
+		ui.c+=1
+		if (ui.c==16) ui.c = 0
+
 	 b.dy*=-1
 	 fire_next_parts(25,b.x,b.y)
 	elseif (b.y+b.dy>128) then
 		p1.s+=1
+		ui.c+=1
+		if (ui.c==16) ui.c = 0
+
 	 b.dy*=-1
 	 fire_next_parts(25,b.x,b.y)
 	end
@@ -261,7 +354,8 @@ end
 function drw_play()
  camera(0,0)
 	cls()
-	rect(0,0,127,127,11)
+	rect(0,0,127,127,ui.c)
+	
 	drw_scores() -- puts both scores in the background
 	drw_ball(b)
 	drw_player(p1) -- could add p2 from here
