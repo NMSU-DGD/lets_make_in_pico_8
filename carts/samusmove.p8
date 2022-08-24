@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 27
+version 36
 __lua__
 -- init
 
@@ -21,7 +21,7 @@ player.x_prev=player.x
 player.y_prev=player.y
 player.mode = 0 -- 0: standing, 1: ball
 player.frame = 1
-player.max_jump_pwr = 4
+player.max_jump_pwr = 8
 player.jump_pwr = player.max_jump_pwr
 player.resting = false
 
