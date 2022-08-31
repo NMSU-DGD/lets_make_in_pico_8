@@ -9,6 +9,8 @@ k_walk_rate = 0.08
 k_jump_rate = 0.8
 k_epsilon = 0.01
 k_max_anim_count = 29 --in frames
+k_mode_stand=0
+k_mode_ball=1
 
 -- anim
 anim_count=0
@@ -19,7 +21,7 @@ player.dx=0
 player.dy=0
 player.x_prev=player.x
 player.y_prev=player.y
-player.mode = 0 -- 0: standing, 1: ball
+player.mode = k_mode_stand -- 0: standing, 1: ball
 player.frame = 1
 player.max_jump_pwr = 8
 player.jump_pwr = player.max_jump_pwr
@@ -62,7 +64,7 @@ function _update60()
 
 --up
 	if (player.mode == 1) then
-		if (btnp(2)) player.mode = 0 
+		if (btnp(2)) player.mode = k_mode_stand 
 	  -- stand
 	else
 		if btn(2) then
@@ -81,7 +83,7 @@ function _update60()
 	
 --down	
 	if (btn(3) and player.mode == 0) then -- up
-	 player.mode = 1
+	 player.mode = k_mode_ball
 	end
 	
 --apply gravity
@@ -238,6 +240,23 @@ function map_hit(x,y,w,h,f,mx,my,mw,mh)
 	
 	return false	
 end										
+
+-- determines if the specified
+--  quadrant of a tile is a 
+--  collider. quadrant can be
+--  0 = upper left; 1 = upper 
+--  right; 2 = lower right; 
+--  3 = lower left
+function get_sub_collider_tile
+	(mx,my,quadrant)
+	if (quadrant == 0 
+		or quadrant == 1)
+	then
+		return fget(mget(mx,my))==0x40
+	else
+		return fget(mget(mx,my))==0x80
+end
+
 -->8
 -- draw helpers
 
