@@ -11,6 +11,10 @@ k_epsilon = 0.01
 k_max_anim_count = 29 --in frames
 k_mode_stand=0
 k_mode_ball=1
+k_ul=0 -- upper left
+k_ur=1 -- upper right
+k_lr=2 -- lower right
+k_ll=3 -- lower left
 
 -- anim
 anim_count=0
@@ -211,35 +215,68 @@ end
 -- determine if a rectangle with
 --  upper-left x,y and size w,h
 --  collides with a map tile
---  with the specified flag
+--  based on flag rules
 -- extended from: http://gamedev.docrobs.co.uk/first-steps-in-pico-8-easy-collisions-with-map-tiles
-function map_hit(x,y,w,h,f,mx,my,mw,mh)
-	mx = mx or 0
-	my = my or 0
-	mw = mw or 8
-	mh = mh or 8
-
+function map_hit(x,y,w,h)
+	-- pixel scan left-to-right
 	for i=x,x+w do
-		if (fget(mget(i/8,y/8)) & 
-				f > 0) 
+		if 
+			(get_sub_collider_tile
+				(i/8,
+				y/8,
+				get_tile_quadrant(x,y)))
 				or
-				(fget(mget(i/8,(y+h)/8)) & 
-				f > 0) then
+				(get_sub_collider_tile
+				(i/8,
+				(y+h)/8,
+				get_tile_quadrant(x,y)))
+		then
 			return true
 		end		
 	end
-	
+	-- pixel scan top-to-bottom
 	for j=y,y+h do
-		if (fget(mget(x/8,j/8)) & 
-				f > 0) or
-				(fget(mget((x+w)/8,j/8)) &
-			 f > 0) then
+		if 
+			(get_sub_collider_tile
+				(x/8,
+				j/8,
+				get_tile_quadrant(x,y)))
+				or
+				(get_sub_collider_tile
+				((x+w)/8,
+				j/8,
+				get_tile_quadrant(x,y)))
+		then
 			return true
 		end
 	end
 	
-	return false	
-end										
+	return false
+end
+
+-- given an x,y coordinate
+--  determine which quadrant
+--  of a map tile it is within
+function get_tile_quadrant(x,y)
+	sub_x=x%8
+	sub_y=y%8
+	if sub_x<4 and sub_y<4
+	then
+		return k_u
+	end
+	if sub_x>3 and sub_y<4
+	then
+		return k_ur
+	end
+	if sub_x<4 and sub_y>3
+	then
+		return k_ll
+	end
+	if sub_x>3 and sub_y>3
+	then
+		return k_lr
+	end
+end
 
 -- determines if the specified
 --  quadrant of a tile is a 
@@ -247,14 +284,17 @@ end
 --  0 = upper left; 1 = upper 
 --  right; 2 = lower right; 
 --  3 = lower left
+-- returns true if collider, 
+--  false otherwise.
 function get_sub_collider_tile
 	(mx,my,quadrant)
-	if (quadrant == 0 
-		or quadrant == 1)
+	if quadrant==k_ul 
+		or quadrant==k_ur
 	then
-		return fget(mget(mx,my))==0x40
+		return fget(mget(mx,my))&0x40>0
 	else
-		return fget(mget(mx,my))==0x80
+		return fget(mget(mx,my))&0x80>0
+	end
 end
 
 -->8
