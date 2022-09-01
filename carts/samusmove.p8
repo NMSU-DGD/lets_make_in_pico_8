@@ -93,48 +93,17 @@ function _update60()
 --apply gravity
 	player.dy+=k_gravity
 	
---do collision det / resp
-	--handle for standing
-	if (player.mode == 0) then
-		if map_hit(player.x+player.dx,
-				player.y,7,7) then
-			player.dx=0
-		end
-		if map_hit(player.x,
-				player.y+player.dy,7,7) 
-				then
-			if (player.dy>0) player.resting=true
-			player.dy=0
-		end
-		if map_hit(player.x+player.dx,
-		  player.y+player.dy,7,7)
-		  then
-		  -- check diagonal as well
-		 player.dx=0
-		 player.dy=0
-		end
+--do collision det / resp of 
+-- various kinds
+--handle for standing
+	if (player.mode == k_mode_stand) then
+		do_collisions(player.x,player.y,7,7)
 	else
 	 -- handle for ball mode
 	 --  in ball mode, the avatar
 	 --  is half-height and 
 	 --  centered on x
-	 if map_hit(player.x+2+player.dx,
-				player.y+4,3,3) then
-			player.dx=0
-		end
-		if map_hit(player.x+2,
-				player.y+4+player.dy,3,3) 
-				then
-			if (player.dy>0) player.resting=true
-			player.dy=0
-		end
-		if map_hit(player.x+2+player.dx,
-		  player.y+4+player.dy,3,3)
-		  then
-		  -- check diagonal as well
-		 player.dx=0
-		 player.dy=0
-		end
+	 do_collisions(player.x+2,player.y+4,3,3)
 	end
 
 	if (player.dy != 0) then
@@ -192,6 +161,32 @@ end
 				
 -->8
 -- collisions
+
+function do_collisions(x,y,w,h)
+	if map_hit(x+player.dx,y,w,h) 
+	then
+		player.dx=0
+	end
+	if map_hit(x,y+player.dy,w,h) 
+	then
+		if (player.dy>0) player.resting=true
+		player.dy=0
+	end
+	if map_hit(x+player.dx,
+			y+player.dy,
+			w,
+			h)
+	then
+		  -- check diagonal as well
+		player.dx=0
+	 player.dy=0
+	end
+	
+	if check_powerup(x,y,w,h)
+	then --do a powerup!
+		
+	end
+end
 
 function check_resting(x,y)
 	--check below for ground
